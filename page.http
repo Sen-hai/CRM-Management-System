@@ -1,0 +1,20 @@
+###
+POST http://localhost:8088/page
+Content-type:application/json
+
+{
+  "pagenum": 1,
+  "pagesize": 5
+
+}
+
+
+###
+POST http://localhost:8088/pages
+Content-type:application/json
+
+{
+"pagenum": 4,
+"pagesize": 2
+
+}
