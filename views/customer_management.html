@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!--     导入bootstrap依赖-->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+
+    <title>客户管理</title>
+    <style>
+        a:link {
+            font-size: 25px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:visited {
+            font-size: 20px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:hover {
+            font-size: 25px;
+            color: white;
+            text-decoration: none
+        }
+
+
+        /* 添加客户模态框*/
+        #addCustomerFormModal {
+            text-align: center;
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 80%; /* 最大宽度限制为80% */
+            padding: 20px;
+            background-color: #fefefe;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #addCustomerFormModal label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px; /* 调整字体大小 */
+        }
+
+        #addCustomerFormModal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #addCustomerFormModal button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+
+        #addCustomerFormModal button:hover {
+            background-color: #0056b3;
+        }
+
+
+        #search-container label {
+            margin-right: 10px;
+        }
+
+        #search-input,
+        #search-btn {
+            font-size: 20px;
+            height: 35px;
+            margin: 5px;
+        }
+
+        table {
+            width: 60%;
+            margin-left: 5px;
+            font-size: 20px;
+            border-collapse: collapse;
+            margin-top: 50px;
+        }
+
+        th, td {
+            border: 2px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .action-buttons button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .edit-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+        }
+
+        .view-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+
+        .lost-button {
+            background-color: #a42717;
+            color: #fff;
+            border: none;
+        }
+
+
+        .updateModal {
+            width: 400px;
+            height: 500px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .updateModal h2 {
+            font-size: 24px; /* 增加标题的字体大小 */
+            color: #007bff; /* 将标题颜色设为主色 */
+            margin-bottom: 15px; /* 添加底部间距 */
+        }
+
+        .updateModal label {
+            display: block;
+            margin: 5px 0; /* 为标签添加垂直间距 */
+        }
+
+        .updateModal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px; /* 为输入框添加底部间距 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* 包括宽度内的填充和边框 */
+        }
+
+        .updateModal button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .updateModal button:hover {
+            background-color: #0056b3; /* 悬停时使用深一些的颜色 */
+        }
+
+        .button-group {
+            display: inline-block; /* Make the button groups inline */
+            margin-right: 10px; /* Adjust the margin as needed */
+        }
+
+
+        /*    查看联系人模态框修饰 */
+        .custom-modal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 200px;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1050;
+            overflow: auto;
+        }
+
+        #contactModalLabel {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .custom-modal .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app" style="width: 100%">
+    <div class="row">
+        <!--显示导航-->
+        <div class="col-md-3" style="background-color: rgb(0,21,41); width:13%; height: 1000px;">
+            <div class="row">
+                <div class="col-md-12"
+                     style="background-color: rgb(0,40,77);text-align: center;height: 70px;line-height: 70px;font-size: 20px;color: white;font-weight: bold;">
+                    CRM管理系统
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center; padding: 60px 0px 40px 0px;">
+                    <a href="customer_management.html">客户信息管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="order_view.html">订单查看</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="churn_customer_management.html">流失客户管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">用户管理</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="service_management.html">服务管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">添加用户</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="login.html">退出登录</a>
+                </div>
+            </div>
+        </div>
+        <!--显示内容-->
+        <div class="col-md-9"
+             style="border: 1px solid rgb(128,128,128);width: 87%; height: 1000px;background-color: #d9edf7;">
+            <!-- 显示提示内容 -->
+            <div class="row" style="width:100%; background-color: #d9edf7">
+                <div style="height: 90px; padding-left: 20px;padding-top:30px;font-size: 30px; color: rgb(109,109,109); ">
+                    <img src="../static/img/用户管理.png" style="width: 50px; height: 50px" alt=""> &nbsp; 客户基本信息
+                    <!--搜索客户-->
+                    <label for="search-input" style="padding-left: 150px">搜索客户：</label>
+                    <input type="text" id="search-input" placeholder="输入客户姓名"
+                           style="font-size: 20px; height: 35px;">
+                    <button type="button" id="search-btn" style="font-size: 20px; height: 35px;">搜索</button>
+                    <!--添加功能-->
+                    <div class="" style="text-align: right; margin-top: -46px;width: 1100px ">
+                        <button class="btn btn-primary" onclick="openAddCustomerModal()">添加客户</button>
+                    </div>
+
+                </div>
+                <div id="customer_container" class="customer-container" style="margin-top: 20px;">
+                    <div id="customer_list" class="customer-list-container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>客户编号</th>
+                                <th>客户名</th>
+                                <th>客户地址</th>
+                                <th>客户联系方式</th>
+                                <th>联系人ID</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="customer_table_body">
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination" style="margin-top: 20px; text-align: center">
+                        <button id="prevPageBtn" disabled>上一页</button>
+                        <span id="currentPage">1</span>
+                        <button id="nextPageBtn">下一页</button>
+                    </div>
+                </div>
+                <!--  add添加客户-->
+                <form id="addCustomerFormModal">
+                    <label for="addcustomerid_modal">客户编号:</label>
+                    <input type="number" id="addcustomerid_modal" name="customerid" required>
+                    <br>
+                    <label for="addcustomername_modal">客户名:</label>
+                    <input type="text" id="addcustomername_modal" name="customername" required>
+                    <br>
+                    <label for="addcustomeradress_modal">客户地址:</label>
+                    <input type="text" id="addcustomeradress_modal" name="customeradress" required>
+                    <br>
+                    <label for="addcustomerinfo_modal">客户联系方式:</label>
+                    <input type="text" id="addcustomerinfo_modal" name="customerinfo" required>
+                    <br>
+                    <label for="addcontactid_modal">联系人 ID:</label>
+                    <input type="text" id="addcontactid_modal" name="contactid" required>
+                    <br>
+                    <button type="submit">提交</button>
+                    <button type="button" onclick="closeAddCustomerModal()">取消</button>
+                </form>
+
+                <!--   修改模态框   -->
+                <div id="updateModal" class="updateModal">
+                    <div id="customer_update" style="display: none">
+                        <div class="modal-content">
+                            <span class="close" onclick="cancelUpdate()">&times;</span>
+                            <form id="updateForm">
+                                <h2 style="font-size: 20px;">编辑客户信息</h2>
+                                <label for="updateCustomerid">客户编号:</label>
+                                <input type="number" id="updateCustomerid" name="customerid" required readonly>
+                                <br>
+                                <label for="updateCustomername">客户名:</label>
+                                <input type="text" id="updateCustomername" name="customername" required>
+                                <br>
+                                <label for="updateCustomeradress">客户地址:</label>
+                                <input type="text" id="updateCustomeradress" name="customeradress" required>
+                                <br>
+                                <label for="updateCustomerinfo">客户联系方式:</label>
+                                <input type="text" id="updateCustomerinfo" name="customerinfo" required>
+                                <br>
+                                <label for="updateContactid">联系人 ID:</label>
+                                <input type="text" id="updateContactid" name="contactid" required>
+                                <br>
+                                <button type="button" onclick="submitUpdate()">提交</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- 查看联系人模态框 -->
+                <div id="contactModal" class="custom-modal" style="display: none">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="contactModalLabel">联系人信息</h5>
+                            </div>
+                            <div class="modal-body" style="font-size: 20px">
+                                <p><strong>联系人姓名:</strong> <span id="contactName"></span></p>
+                                <p><strong>联系人联系方式:</strong> <span id="contactInfo"></span></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeContactModal()">关闭
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 流失客户模态框 -->
+                <div id="churnCustomerModal" class="custom-modal" style="display: none">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="churnCustomerModalLabel">流失客户信息</h5>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>流失ID:</strong> <label for="churnId"> </label><input type="text"
+                                                                                                 id="churnId"></p>
+                                <p><strong>客户ID:</strong> <label for="churnCustomerId"> </label><input type="text"
+                                                                                                         id="churnCustomerId">
+                                </p>
+                                <p><strong>客户姓名:</strong> <label for="churnCustomerName"> </label><input type="text"
+                                                                                                             id="churnCustomerName">
+                                </p>
+                                <p><strong>客户经理:</strong> <label for="churnCustomerManager"> </label><input
+                                        type="text" id="churnCustomerManager"></p>
+                                <p><strong>流失时间:</strong> <label for="churnOrdertime"> </label><input type="text"
+                                                                                                          id="churnOrdertime">
+                                </p>
+                                <p><strong>流失原因:</strong> <label for="churnReasons"> </label><input type="text"
+                                                                                                        id="churnReasons">
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="submitChurn()">提交</button>
+                                <button type="button" class="btn btn-secondary" onclick="closeChurnCustomerModal()">
+                                    关闭
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+
+    // 添加客户功能
+    function openAddCustomerModal() {
+        console.log("打开添加客户模态框")
+        $('#addCustomerFormModal').show();
+    }
+
+    function closeAddCustomerModal() {
+        console.log("关闭添加客户模态框")
+        $('#addCustomerFormModal').hide();
+    }
+
+    document.getElementById('addCustomerFormModal').addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitAddCustomerModal();
+    });
+
+    function submitAddCustomerModal() {
+        const formData = {
+            customerid: parseInt($('#addcustomerid_modal').val()),
+            customername: $('#addcustomername_modal').val(),
+            customeradress: $('#addcustomeradress_modal').val(),
+            customerinfo: $('#addcustomerinfo_modal').val(),
+            contactid: parseInt($('#addcontactid_modal').val())
+        };
+
+        // 发送 AJAX 请求到服务器
+        $.ajax({
+            url: '/addcustomer',
+            type: 'POST',
+            data: formData, // 使用表单编码数据而不是 JSON
+            success: function (response) {
+                if (response.success) {
+                    alert("返回的数据：" + response.message)
+                    console.log('客户添加成功:', response.message);
+                    location.reload();
+                } else {
+                    // alert(response.data)
+                    console.error('客户添加失败:', response.data);
+                }
+                closeAddCustomerModal();
+            },
+            error: function (errorResponse) {
+                // 输出错误信息到控制台
+                console.error('无法添加客户:', errorResponse);
+
+            }
+        });
+    }
+
+
+    // 修改功能
+    function updateCustomer(customerId) {
+        // 使用 AJAX 从服务器获取客户详细信息
+        $.ajax({
+            url: '/customer_management/getCustomer/' + customerId,
+            type: 'GET',
+            success: function (data) {
+                // 使用客户详细信息填写表格
+                $('#updateCustomerid').val(data.Customerid);
+                $('#updateCustomername').val(data.Customername);
+                $('#updateCustomeradress').val(data.Customeraddress);
+                $('#updateCustomerinfo').val(data.Customerinfo);
+                $('#updateContactid').val(data.Contactid);
+
+                // 修改框
+                $('#customer_update').show();
+                $('#updateModal').show();
+            },
+            error: function (errorResponse) {
+                console.error('无法获取客户详细信息:', errorResponse);
+            }
+        });
+    }
+
+    function submitUpdate() {
+        // 准备更新数据
+        var formData = {
+            customerid: parseInt($('#updateCustomerid').val()),
+            customername: $('#updateCustomername').val(),
+            customeraddress: $('#updateCustomeradress').val(),
+            customerinfo: $('#updateCustomerinfo').val(),
+            contactid: parseInt($('#updateContactid').val())
+        };
+        // 发送 AJAX 请求以更新客户
+        $.ajax({
+            url: '/updateCustomer',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (data) {
+                if (data.success) {
+
+                    console.log('客户信息修改成功:', data.message);
+                    console.log(data)
+                } else {
+
+                    console.error('客户信息修改失败:', data.code + data.message);
+                }
+
+                // 隐藏更新表单和模态框
+                $('#customer_update').hide();
+                $('#updateModal').hide();
+
+                // 刷新页面
+                location.reload();
+            },
+            error: function (errorResponse) {
+                console.error('客户信息修改失败:', errorResponse);
+
+            }
+        });
+    }
+
+    function cancelUpdate() {
+        $('#customer_update').hide();
+        $('#updateModal').hide();
+    }
+
+
+    //  删除功能
+    function deleteCustomer(customerId) {
+        // 删除前与用户确认
+        if (confirm('确认删除该客户吗？')) {
+            // 发送AJAX请求删除客户
+            $.ajax({
+                url: '/customer_management/deleteCustomer/' + customerId,
+                type: 'DELETE',
+                success: function (data) {
+                    if (data.success) {
+                        console.log('客户删除成功:', data.message);
+                        location.reload(); // 刷新页面
+                    } else {
+                        console.log("customerid:", customerid)
+                        console.log('客户删除失败: code:', data.code);
+                        console.log('客户删除失败: message:', data.message);
+
+                    }
+                },
+                error: function (errorResponse) {
+                    console.error('无法删除客户:', errorResponse);
+                }
+            });
+        }
+    }
+
+
+    // 分页功能
+    let pageNum = 1;
+    const pageSize = 2;
+    let totalCustomerCount;
+    $(document).ready(function () {
+        // 发送 AJAX 请求以获取服务数据
+        $.ajax({
+            url: '/customer_management/getall',
+            type: 'GET',
+            dataType: 'json',  // 更新以期望 JSON 数据
+            success: function (data) {
+                console.log("data1 = :", data);
+                // Check if data is not null before accessing its properties
+                if (data !== null) {
+                    // 清除现有表格内容
+                    $('#customer_table_body').empty();
+
+                    // 更新全局变量totalServiceCount，这里从后端返回的JSON中有totalServiceCount字段
+                    // totalCustomerCount = data.total_pages;
+                    // console.log("totalCustomerCount: ", totalCustomerCount)
+                    // 遍历 JSON 数据并将行附加到表格
+                    $('#prevPageBtn').on('click', function () {
+                        pageNum -= 1;
+                        showPage();
+                    });
+                    $('#nextPageBtn').on('click', function () {
+                        pageNum += 1;
+                        showPage();
+                    });
+                    showPage();
+                } else {
+                    console.error('获取客户数据时出错：返回的数据为空');
+                }
+            },
+        });
+    });
+
+    function showPage() {
+        $('#customer_table_body').empty();
+        $.ajax({
+            url: '/ShowCustomerByPage',
+            type: 'POST',
+            dataType: 'json',  // 更新以期望 JSON 数据
+            data: JSON.stringify({Pagenum: pageNum, Pagesize: pageSize}),
+            success: function (data) {
+                console.log("data2 = :", data)
+                // console.log("totalCount: ", data.totalCount)
+                // 从返回的JSON中获取服务列表
+                console.log("data.customers:", data.customers)
+                const customers = data.customers;
+
+                $.each(customers, function (index, customer) {
+                    var row = '<tr>' +
+                        '<td>' + customer.customerid + '</td>' +
+                        '<td>' + customer.customername + '</td>' +
+                        '<td>' + customer.customeraddress + '</td>' +
+                        '<td>' + customer.customerinfo + '</td>' +
+                        '<td>' + customer.contactid + '</td>' +
+                        '<td class="action-buttons">' +
+                        '<button class="view-button" onclick="viewContactPerson(\'' + customer.contactid + '\')">查看联系人</button>' +
+                        '<button class="edit-button" onclick="updateCustomer(\'' + customer.customerid + '\')">修改</button>' +
+                        '<button class="delete-button" onclick="deleteCustomer(\'' + customer.customerid + '\')">删除</button>' +
+                        '<button class="lost-button" onclick="viewChurnCustomer(\'' + customer.contactid + '\')">流失</button>' +
+                        '</td>' +
+                        '</tr>';
+                    // 将行附加到表格主体
+                    $('#customer_table_body').append(row);
+                });
+
+                // 更新分页按钮状态
+                updatePaginationButtons();
+            },
+            error: function (xhr, status, errorResponse) {
+                console.error('加载页面数据失败：', errorResponse);
+                alert('加载页面数据失败，请重试。');
+            }
+        });
+    }
+
+    // 更新分页按钮状态（上一页、下一页）
+    function updatePaginationButtons() {
+        // 更新当前页数显示
+        $('#currentPage').text(pageNum);
+
+        // 根据当前页数禁用/启用“上一页”按钮
+        $('#prevPageBtn').prop('disabled', pageNum === 1);
+
+        // 根据当前页数和总页数禁用/启用“下一页”按钮
+        const totalPages = Math.ceil(totalCustomerCount / pageSize);
+        $('#nextPageBtn').prop('disabled', pageNum === totalPages || totalPages === 0);
+    }
+
+
+    // 模糊查询功能
+    $(document).ready(function () {
+        console.log("查找客户功能")
+
+        // 给搜索按钮添加点击事件处理函数
+        $('#search-btn').on('click', function () {
+
+            // 清空表格内容
+            $('#customer_table_body').empty();
+            $('#pagination').empty();
+
+            // 获取用户输入的搜索词
+            const searchTerm = $('#search-input').val();
+
+            // 发送 AJAX 请求以获取符合搜索词的服务数据
+            $.ajax({
+                url: '/customer_management/searchCustomer',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({searchTerm: searchTerm}),
+                success: function (data) {
+
+                    // 解析服务数据
+                    const customers = data.data;
+
+                    // 处理从服务器返回的服务数据，更新页面等操作
+                    console.log(data);
+                    // 更新表格内容
+                    $.each(customers, function (index, customer) {
+                        var row = '<tr>' +
+                            '<td>' + customer.Customerid + '</td>' +
+                            '<td>' + customer.Customername + '</td>' +
+                            '<td>' + customer.Customeraddress + '</td>' +
+                            '<td>' + customer.Customerinfo + '</td>' +
+                            '<td>' + customer.Contactid + '</td>' +
+                            '<td class="action-buttons">' +
+                            '<button class="view-button" onclick="viewContactPerson(\'' + customer.Contactid + '\')">查看联系人</button>' +
+                            '<button class="edit-button" onclick="updateCustomer(\'' + customer.Customerid + '\')">修改</button>' +
+                            '<button class="delete-button" onclick="deleteCustomer(\'' + customer.Customerid + '\')">删除</button>' +
+                            '<button class="lost-button" onclick="viewChurnCustomer(\'' + customer.Contactid + '\')">流失</button>' +
+                            '</td>' +
+                            '</tr>';
+                        // 将行附加到表格主体
+                        $('#customer_table_body').append(row);
+                    });
+                },
+                error: function (data) {
+                    console.error('搜索服务失败:', data.code + data.message);
+                }
+            });
+        });
+    });
+
+
+    // 查看联系人信息的函数
+    function viewContactPerson(contactId) {
+        if (contactId) {
+            // 发送 AJAX 请求以获取联系人详细信息
+            $.ajax({
+                type: "GET",
+                url: "/api/getContactDetails/" + contactId,
+                success: function (response) {
+                    console.log("response", response);
+
+                    // 使用联系人详细信息更新模态框内容
+                    $('#contactModalLabel').text("联系人信息");
+                    $('#contactName').text(response.Contactname);
+                    $('#contactInfo').text(response.Contactinfo);
+
+                    // 使用 display: block 显示模态框
+                    $('#contactModal').css('display', 'block');
+                },
+                error: function (data) {
+                    console.log(data)
+                    // 处理错误响应，例如，显示错误消息
+                    alert("获取联系人详细信息时出错。" + data.code + data.message);
+                }
+            });
+        } else {
+            alert("无效的联系人ID");
+        }
+    }
+
+
+    // 关闭模态框
+    function closeContactModal() {
+
+        $('#contactModal').css('display', 'none');
+    }
+
+
+    // 流失客户功能
+    function viewChurnCustomer() {
+        $('#churnCustomerModal').css('display', 'block');
+    }
+
+    function closeChurnCustomerModal() {
+
+        $('#churnCustomerModal').css('display', 'none');
+    }
+
+    function submitChurn() {
+        const formData = {
+            churnid: parseInt($('#churnId').val()),
+            customerid: parseInt($('#churnCustomerId').val()),
+            customername: $('#churnCustomerName').val(),
+            customermanager: $('#churnCustomerManager').val(),
+            ordertime: $('#churnOrdertime').val(),
+            churnreasons: $('#churnReasons').val()
+        };
+
+        // 发送 AJAX 请求到服务器
+        $.ajax({
+            url: '/markCustomerAsLost',
+            type: 'POST',
+            data: formData, // 使用表单编码数据而不是 JSON
+            success: function (data) {
+                if (data.success) {
+                    console.log('流失客户添加成功:', data.message);
+                    console.log("data.customerid:", formData.customerid)
+                    deleteCustomer(formData.customerid);
+                    location.reload();
+                } else {
+                    console.error('流失客户添加失败:', data.code + data.message);
+                }
+                closeChurnCustomerModal();
+            },
+            error: function (data) {
+                console.error('无法流失客户:', data.code + data.message);
+                closeChurnCustomerModal();
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
+

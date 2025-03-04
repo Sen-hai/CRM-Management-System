@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>流失客户管理页面</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 导入bootstrap依赖 -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+
+    <style>
+        a:link {
+            font-size: 25px;
+            color: rgb(109, 109, 109);
+        }
+        a:visited {
+            font-size: 20px;
+            color: rgb(109, 109, 109);
+        }
+        a:hover {
+            font-size: 25px;
+            color: white;
+            text-decoration: none
+        }
+
+
+        /* 表格样式 */
+        .table {
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            margin-bottom: 1rem;
+            background-color: transparent;
+        }
+
+        .table th,
+        .table td {
+            text-align: center;
+            padding: 0.75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        /* 表头背景色 */
+        .table thead th {
+            background-color: #f8f9fa;
+        }
+
+        /* 条纹状背景 */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 鼠标悬停高亮 */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        /* 输入框和按钮样式 */
+        #search-input {
+            font-size: 16px;
+            height: 30px;
+        }
+
+        #search-btn {
+            font-size: 16px;
+            height: 30px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container" id="app" style="width: 100%">
+    <div class="row">
+        <!--显示导航-->
+        <div class="col-md-3" style="background-color: rgb(0,21,41); width:13%; height: 1000px;">
+            <div class="row">
+                <div class="col-md-12" style="background-color: rgb(0,40,77);text-align: center;height: 70px;line-height: 70px;font-size: 20px;color: white;font-weight: bold;">
+                    CRM管理系统
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center; padding: 60px 0px 40px 0px;">
+                    <a href="customer_management.html">客户信息管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="order_view.html">订单查看</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="churn_customer_management.html">流失客户管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">用户管理</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="service_management.html">服务管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">添加用户</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="login.html">退出登录</a>
+                </div>
+            </div>
+        </div>
+        <!--显示内容-->
+        <div class="col-md-9" style="border: 1px solid rgb(128,128,128);width: 87%; height: 1000px;background-color: #d9edf7">
+            <div class="row" style="width:100%; background-color: #d9edf7">
+                <div style="height: 90px; padding-left: 20px;padding-top:30px;font-size: 30px; color: rgb(109,109,109); ">
+                    <img src="../static/img/用户管理.png" style="width: 50px; height: 50px" alt=""> &nbsp; 流失客户
+                    <!--搜索客户-->
+                    <label for="search-input" style="padding-left: 150px">搜索客户：</label>
+                    <input type="text" id="search-input" placeholder="输入客户名"
+                           style="font-size: 20px; height: 35px;">
+                    <button type="button" id="search-btn" style="font-size: 20px; height: 35px;">搜索</button>
+                </div>
+
+                <div id="churn_container" class="churn-container" style="margin-top: 30px;font-size: 20px">
+                    <div id="churn_list" class="churn-list-container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>流失客户编号</th>
+                                <th>客户ID</th>
+                                <th>客户名</th>
+                                <th>经理</th>
+                                <th>下单时间</th>
+                                <th>流失原因</th>
+                            </tr>
+                            </thead>
+                            <tbody id="churn_table_body">
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+
+    $(document).ready(function() {
+        // 发送 AJAX 请求以获取订单数据
+        $.ajax({
+            url: '/get_churn_customer',
+            type: 'GET',
+            dataType: 'json',  // 更新以期望 JSON 数据
+            success: function(data) {
+                // 清除现有表格内容
+                $('#churn_table_body').empty();
+
+                // 遍历 JSON 数据并将行附加到表格
+                $.each(data, function(index, churncustomer) {
+
+                    const row = '<tr>' +
+                        '<td>' + churncustomer.Churnid + '</td>' +
+                        '<td>' + churncustomer.Customerid + '</td>' +
+                        '<td>' + churncustomer.Customername + '</td>' +
+                        '<td>' + churncustomer.Customermanager + '</td>' +
+                        '<td>' + churncustomer.Ordertime + '</td>' +
+                        '<td>' + churncustomer.Churnreasons + '</td>' +
+                        '</tr>';
+
+                    // 将行附加到表格主体
+                    $('#churn_table_body').append(row);
+                });
+            },
+            error: function(data) {
+                console.error('获取流失客户时数据时出错：', data.code + data.message);
+                // 在前端处理错误信息，显示给用户
+                alert('获取流失客户时数据时出错：' +data.code + data.message);
+            }
+        });
+    });
+
+
+    // 模糊查询功能
+    $(document).ready(function () {
+        console.log("查找流失客户功能")
+
+        // 给搜索按钮添加点击事件处理函数
+        $('#search-btn').on('click', function () {
+
+            // 清空表格内容
+            $('#churn_table_body').empty();
+            $('#pagination').empty();
+
+            // 获取用户输入的搜索词
+            const searchTerm = $('#search-input').val();
+
+            // 发送 AJAX 请求以获取符合搜索词的服务数据
+            $.ajax({
+                url: '/SearchChurnCustomer',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({searchTerm: searchTerm}),
+                success: function (data) {
+
+                    // 解析服务数据
+                    const churncustomers = data.data;
+
+                    // 处理从服务器返回的服务数据，更新页面等操作
+                    console.log(data);
+                    // 更新表格内容
+                    $.each(churncustomers, function(index, churncustomer) {
+
+                        const row = '<tr>' +
+                            '<td>' + churncustomer.Churnid + '</td>' +
+                            '<td>' + churncustomer.Customerid + '</td>' +
+                            '<td>' + churncustomer.Customername + '</td>' +
+                            '<td>' + churncustomer.Customermanager + '</td>' +
+                            '<td>' + churncustomer.Ordertime + '</td>' +
+                            '<td>' + churncustomer.Churnreasons + '</td>' +
+                            '</tr>';
+
+                        // 将行附加到表格主体
+                        $('#churn_table_body').append(row);
+                    });
+                },
+                error: function (data) {
+                    console.error('搜索流失客户失败:', data.code + data.message);
+                    alert('搜索流失客户失败:' + data.code + data.message);
+                }
+            });
+        });
+    });
+
+
+</script>
+</body>
+</html>

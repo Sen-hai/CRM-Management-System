@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>服务管理页面</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 导入bootstrap依赖 -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+
+    <style>
+        a:link {
+            font-size: 25px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:visited {
+            font-size: 20px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:hover {
+            font-size: 25px;
+            color: white;
+            text-decoration: none
+        }
+
+
+        /* 表格样式 */
+        .table {
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            margin-bottom: 1rem;
+            background-color: transparent;
+        }
+
+        .table th,
+        .table td {
+            text-align: center;
+            padding: 0.75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        /* 表头背景色 */
+        .table thead th {
+            background-color: #f8f9fa;
+        }
+
+        /* 条纹状背景 */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 鼠标悬停高亮 */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        /* 输入框和按钮样式 */
+        #search-input {
+            font-size: 16px;
+            height: 30px;
+        }
+
+        #search-btn {
+            font-size: 16px;
+            height: 30px;
+        }
+
+
+        /* 添加服务模态框*/
+        #addServicesFormModal {
+            text-align: center;
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 80%; /* 最大宽度限制为80% */
+            padding: 20px;
+            background-color: #fefefe;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #addServicesFormModal label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px; /* 调整字体大小 */
+        }
+
+        #addServicesFormModal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #addServicesFormModal button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+
+        #addServicesFormModal button:hover {
+            background-color: #0056b3;
+        }
+
+
+        .action-buttons button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+
+        .button-group {
+            display: inline-block; /* Display elements as inline-block */
+            margin-right: 3px; /* Add some margin between buttons for spacing */
+        }
+
+        .createorder-button {
+            background-color: #3463af;
+            color: #fff;
+            border: none;
+        }
+
+        .service_update {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+        }
+
+
+        /* 修改模块修饰 */
+        #service_update {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 80%;
+            padding: 20px;
+            background-color: #fff; /* Set background color */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        #service_update h2 {
+            font-size: 20px;
+            color: #333; /* Set heading color */
+        }
+
+        #service_update label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px; /* Set label font size */
+        }
+
+        #service_update input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #service_update button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 150px;
+        }
+
+        #service_update button:hover {
+            background-color: #0056b3;
+        }
+
+        #service_update .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #333; /* Set close button color */
+            cursor: pointer;
+        }
+
+        #service_update .close:hover {
+            color: #000; /* Set close button color on hover */
+        }
+
+
+
+        /* 生成订单模块修饰 */
+        #CreateOrder {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 80%;
+            padding: 20px;
+            background-color: #fff; /* Set background color */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        #CreateOrder h2 {
+            font-size: 20px;
+            color: #333; /* Set heading color */
+        }
+
+        #CreateOrder label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px; /* Set label font size */
+        }
+
+        #CreateOrder input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #CreateOrder button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 150px;
+        }
+
+        #CreateOrder button:hover {
+            background-color: #0056b3;
+        }
+
+        #CreateOrder .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #333; /* Set close button color */
+            cursor: pointer;
+        }
+
+        #CreateOrder .close:hover {
+            color: #000; /* Set close button color on hover */
+        }
+
+    </style>
+</head>
+<body>
+<div class="container" id="app" style="width: 100%">
+    <div class="row">
+        <!--显示导航-->
+        <div class="col-md-3" style="background-color: rgb(0,21,41); width:13%; height: 1000px;">
+            <div class="row">
+                <div class="col-md-12"
+                     style="background-color: rgb(0,40,77);text-align: center;height: 70px;line-height: 70px;font-size: 20px;color: white;font-weight: bold;">
+                    CRM管理系统
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center; padding: 60px 0px 40px 0px;">
+                    <a href="customer_management.html">客户信息管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="order_view.html">订单查看</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="churn_customer_management.html">流失客户管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">用户管理</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="service_management.html">服务管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">添加用户</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="login.html">退出登录</a>
+                </div>
+            </div>
+        </div>
+        <!--显示内容-->
+        <div class="col-md-9"
+             style="border: 1px solid rgb(128,128,128);width: 87%; height: 1000px;background-color: #d9edf7">
+            <div class="row" style="width:100%; background-color: #d9edf7">
+                <div style="height: 90px; padding-left: 20px;padding-top:30px;font-size: 30px; color: rgb(109,109,109); ">
+                    <img src="../static/img/用户管理.png" style="width: 50px; height: 50px" alt=""> &nbsp; 服务创建
+                    <!--搜索客户-->
+                    <label for="search-input" style="padding-left: 150px">搜索客户：</label>
+                    <input type="text" id="search-input" placeholder="输入客户名" style="font-size: 20px; height: 35px;">
+                    <button type="button" id="search-btn" style="font-size: 20px; height: 35px;">搜索</button>
+
+                    <!--添加功能-->
+                    <div class="" style="text-align: right; margin-top: -46px;width: 1100px ">
+                        <button class="btn btn-primary" onclick="openAddServicesModal()">添加服务</button>
+                    </div>
+                </div>
+
+                <div id="service_container" class="service-container" style="margin-top: 30px;font-size: 20px">
+                    <div id="service_list" class="service-list-container">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>服务编号</th>
+                                <th>服务名称</th>
+                                <th>客户姓名</th>
+                                <th>服务状态</th>
+                                <th>服务创建人</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="service_table_body">
+                            <!-- JavaScript给数据         -->
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div id="pagination" style="margin-top: 20px; text-align: center">
+                        <button id="prevPageBtn">上一页</button>
+                        <span id="currentPage">1</span>
+                        <button id="nextPageBtn">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  add添加服务-->
+        <form id="addServicesFormModal">
+            <label for="addserviceid_modal">服务编号:</label>
+            <input type="number" id="addserviceid_modal" name="serviceid" required>
+            <br>
+            <label for="addServicename_modal">服务名称:</label>
+            <input type="text" id="addServicename_modal" name="servicename" required>
+            <br>
+            <label for="addCustomername_modal">客户姓名:</label>
+            <input type="text" id="addCustomername_modal" name="customername" required>
+            <br>
+            <label for="addServicestatus_modal">服务状态:</label>
+            <input type="text" id="addServicestatus_modal" name="servicestatus" required>
+            <br>
+            <label for="addServicecreator_modal">服务创建人:</label>
+            <input type="text" id="addServicecreator_modal" name="servicecreator" required>
+            <br>
+            <button type="submit">提交</button>
+            <button type="button" onclick="closeAddServicesModal()">取消</button>
+        </form>
+
+        <!-- update修改功能 -->
+        <div id="service_update" class="service_update">
+            <span class="close" onclick="cancelUpdate()">&times;</span>
+            <form id="updateForm">
+                <h2 style="font-size: 20px; text-align: center">编辑服务信息</h2>
+                <label for="updateServiceid">服务编号:</label>
+                <input type="number" id="updateServiceid" name="serviceid" required readonly>
+                <br>
+                <label for="updateServicename">服务名称:</label>
+                <input type="text" id="updateServicename" name="servicename" required>
+                <br>
+                <label for="updateCustomername">客户名称:</label>
+                <input type="text" id="updateCustomername" name="customername" required readonly>
+                <br>
+                <label for="updateServicestatus">服务状态:</label>
+                <input type="text" id="updateServicestatus" name="servicestatus" required>
+                <br>
+                <label for="updateServicecreator">服务创建人:</label>
+                <input type="text" id="updateServicecreator" name="servicecreator" required>
+                <br>
+                <button type="button" onclick="submitUpdate()">提交</button>
+            </form>
+        </div>
+
+
+        <!-- 生成订单功能  -->
+        <div id="CreateOrder" class="CreateOrder" style="display: none">
+            <span class="close" onclick="cancelCreateOrder()">&times;</span>
+            <form id="CreateOrderForm">
+                <h2 style="font-size: 20px; text-align: center">生成订单</h2>
+                <label for="orderid">订单编号:</label>
+                <input type="number" id="orderid" name="orderid" required>
+                <br>
+                <label for="ordername">订单名称:</label>
+                <input type="text" id="ordername" name="ordername" required>
+                <br>
+                <label for="orderstatus">订单状态:</label>
+                <input type="text" id="orderstatus" name="orderstatus" required>
+                <br>
+                <label for="customername">客户姓名:</label>
+                <input type="text" id="customername" name="customername" required>
+                <br>
+                <label for="orderaddress">订单地址:</label>
+                <input type="text" id="orderaddress" name="orderaddress" required>
+                <br>
+                <label for="orderprice">订单价格:</label>
+                <input type="text" id="orderprice" name="orderprice" required>
+                <br>
+                <label for="ordertime">创建时间:</label>
+                <input type="text" id="ordertime" name="ordertime" required>
+                <br>
+                <button type="button" onclick="submitCreateOrder()">生成订单</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+<script>
+
+
+    let pageNum = 1;
+    const pageSize = 2;
+    let totalServiceCount;
+    $(document).ready(function () {
+        // 发送 AJAX 请求以获取服务数据
+        $.ajax({
+            url: '/get_services',
+            type: 'GET',
+            dataType: 'json',  // 更新以期望 JSON 数据
+            success: function (data) {
+                console.log("data1 = :", data);
+                // 清除现有表格内容
+                $('#service_table_body').empty();
+
+                // 更新全局变量totalServiceCount，这里从后端返回的JSON中有totalServiceCount字段
+                // console.log("total_pages: ",total_pages)
+                // totalServiceCount = data.total_pages;
+                // console.log("totalServiceCount: ", totalServiceCount)
+                // 遍历 JSON 数据并将行附加到表格
+                $('#prevPageBtn').on('click', function () {
+                    pageNum -= 1;
+                    showPage();
+                });
+                $('#nextPageBtn').on('click', function () {
+                    pageNum += 1;
+                    showPage();
+                });
+                showPage();
+            },
+            error: function (data) {
+                console.error('获取服务数据时出错：', data.code + data.message);
+            }
+        });
+    });
+
+    function showPage() {
+        $('#service_table_body').empty();
+        $.ajax({
+            url: '/ShowServiceByPage',
+            type: 'POST',
+            dataType: 'json',  // 更新以期望 JSON 数据
+            data: JSON.stringify({Pagenum: pageNum, Pagesize: pageSize}),
+            success: function (data) {
+                console.log("data2 = :", data)
+                // console.log("total_pages: ", data.total_pages)
+                // 从返回的JSON中获取服务列表
+                console.log("data.services:", data.services)
+                const services = data.services;
+
+                $.each(services, function (index, service) {
+                    const row = '<tr>' +
+                        '<td>' + service.serviceid + '</td>' +
+                        '<td>' + service.servicename + '</td>' +
+                        '<td>' + service.customername + '</td>' +
+                        '<td>' + service.servicestatus + '</td>' +
+                        '<td>' + service.Servicecreator + '</td>' +
+                        '<td>' +
+                        '<div class="button-group">' +
+                        '<button class="createorder-button" onclick="viewCreateorder(\'' + service.serviceid + '\')">生成订单</button>' +
+                        '</div>' +
+                        '<div class="button-group">' +
+                        '<button class="service_update" onclick="updateService(\'' + service.serviceid + '\')">修改</button>' +
+                        '</div>' +
+                        '<div class="button-group">' +
+                        '<button class="delete-button" onclick="deleteService(\'' + parseInt(service.serviceid) + '\')">删除</button>' +
+                        '</div>' +
+                        '</td>' +
+                        '</tr>';
+                    // 将行附加到表格主体
+                    $('#service_table_body').append(row);
+                });
+
+
+                // 更新分页按钮状态
+                updatePaginationButtons();
+            },
+            error: function (xhr, status, data) {
+                console.error('加载页面数据失败：', data.code + data.message);
+                alert('加载页面数据失败，请重试。');
+            }
+        });
+    }
+
+    // 更新分页按钮状态（上一页、下一页）
+    function updatePaginationButtons() {
+        // 更新当前页数显示
+        $('#currentPage').text(pageNum);
+
+        // 根据当前页数禁用/启用“上一页”按钮
+        $('#prevPageBtn').prop('disabled', pageNum === 1);
+
+        // 根据当前页数和总页数禁用/启用“下一页”按钮
+        const totalPages = Math.ceil(totalServiceCount / pageSize);
+        $('#nextPageBtn').prop('disabled', pageNum === totalPages || totalPages === 0);
+    }
+
+    // // 处理“下一页”按钮点击事件
+    // $('#nextPageBtn').on('click', function () {
+    //     const totalPages = Math.ceil(totalServiceCount / pageSize);
+    //     if (pageNum < totalPages) {
+    //         pageNum += 1;
+    //         showPage();
+    //     }
+    // });
+    //
+    // // 处理“上一页”按钮点击事件
+    // $('#prevPageBtn').on('click', function () {
+    //     if (pageNum > 1) {
+    //         pageNum -= 1;
+    //         showPage();
+    //     }
+    // });
+
+
+    // 实现添加功能
+    function openAddServicesModal() {
+        console.log("打开添加服务模态框")
+        $('#addServicesFormModal').show();
+    }
+
+    function closeAddServicesModal() {
+        console.log("关闭添加服务模态框")
+        $('#addServicesFormModal').hide();
+    }
+
+    document.getElementById('addServicesFormModal').addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitAddServicesModal();
+    });
+
+    function submitAddServicesModal() {
+        const formData = {
+            serviceid: parseInt($('#addserviceid_modal').val()),
+            servicename: $('#addServicename_modal').val(),
+            customername: $('#addCustomername_modal').val(),
+            servicestatus: $('#addServicestatus_modal').val(),
+            servicecreator: $('#addServicecreator_modal').val(),
+
+
+        };
+        console.log("customername",customername)
+        // 发送 AJAX 请求到服务器
+        $.ajax({
+            url: '/service_management',
+            type: 'POST',
+            data: formData, // 使用表单编码数据而不是 JSON
+            success: function (data) {
+                if (data.success) {
+                    console.log('服务添加成功:', data.message);
+                    location.reload();
+                } else {
+                    console.error('服务添加失败:', data.code + data.message);
+                }
+                closeAddServicesModal();
+            },
+            error: function (data) {
+                console.error('无法添加服务:', data.code + data.message);
+                closeAddServicesModal();
+            }
+        });
+    }
+
+    // 删除功能
+    function deleteService(serviceid) {
+        // 在执行删除操作前，向用户确认
+        if (confirm("确定要删除此服务吗？")) {
+            // 发送 AJAX 请求以删除服务
+            $.ajax({
+                url: '/deleteService/' + serviceid,
+                type: 'DELETE',
+                success: function (data) {
+                    if (data.success) {
+                        console.log('服务删除成功：', data.message);
+                        // 重新加载页面或根据需要更新 UI
+                        location.reload();
+                    } else {
+                        console.error('无法删除服务：', data.code + data.message);
+                    }
+                },
+                error: function (data) {
+                    console.error('删除服务时发生错误：', data.code + data.message);
+                }
+            });
+        }
+    }
+
+
+
+    // 修改功能
+    function updateService(serviceid) {
+        // 使用 AJAX 从服务器获取服务详细信息
+        $.ajax({
+            url: '/service_management/getservice/' + serviceid,
+            type: 'GET',
+            success: function (data) {
+                // 使用服务详细信息填写表格
+                $('#updateServiceid').val(data.serviceid);
+                $('#updateServicename').val(data.servicename);
+                $('#updateCustomername').val(data.customername);
+                $('#updateServicestatus').val(data.servicestatus);
+                $('#updateServicecreator').val(data.servicecreator);
+
+                // 修改框
+                showUpdateModal()
+            },
+            error: function (data) {
+                console.error('无法获取服务详细信息:', data.code + data.message);
+            }
+        });
+    }
+
+    function submitUpdate() {
+        // 准备更新数据
+        var formData = {
+            serviceid: parseInt($('#updateServiceid').val()),
+            servicename: $('#updateServicename').val(),
+            customername: $('#updateCustomername').val(),
+            servicestatus: $('#updateServicestatus').val(),
+            servicecreator: $('#updateServicecreator').val()
+        };
+        // 发送 AJAX 请求以更新服务
+        $.ajax({
+            url: '/updateService',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (data) {
+                if (data.success) {
+                    console.log('服务信息修改成功:', data.message);
+
+                    // 刷新页面
+                    location.reload();
+
+                } else {
+                    console.error('服务信息修改失败:', data.code + data.message);
+                }
+
+                // 隐藏更新表单和模态框
+                cancelUpdate()
+
+            },
+            error: function (data) {
+                console.error('客户信息修改失败:', data.code + data.message);
+
+            }
+        });
+    }
+
+    function showUpdateModal() {
+        $('#service_update').show();
+    }
+    function cancelUpdate() {
+        $('#service_update').hide();
+    }
+
+    // 实现修改功能
+    // $(document).on('click', '.service_update', function () {
+    //     const serviceid = parseInt($(this).data('serviceid'));
+    //
+    //
+    //     if (!isNaN(serviceid)) {
+    //         prepareUpdate(serviceid);
+    //     } else {
+    //         console.error('Invalid service ID:', serviceid);
+    //     }
+    //     // prepareUpdate(serviceid);
+    //
+    // });
+    //
+    // function prepareUpdate(serviceid) {
+    //     console.log('修改 service ID:', serviceid);
+    //
+    //
+    //
+    //     // 使用 AJAX 从服务器获取服务详细信息
+    //     $.ajax({
+    //         url: '/service_management/getservice/' + serviceid,
+    //         type: 'GET',
+    //         success: function (data) {
+    //             // 使用服务详细信息填写表格
+    //             populateUpdateForm(data);
+    //
+    //             // 显示更新模态框
+    //             showUpdateModal();
+    //         },
+    //         error: function (error) {
+    //             console.error('无法获取服务详细信息:', error);
+    //         }
+    //     });
+    // }
+    //
+    // function populateUpdateForm(data) {
+    //     console.log("populateUpdateForm  data.serviceid = :",data.serviceid)
+    //     $('#updateServiceid').val(data.serviceid);
+    //     $('#updateServicename').val(data.servicename);
+    //     $('#updateCustomername').val(data.customername);
+    //     $('#updateServicestatus').val(data.servicestatus);
+    //     $('#updateServicecreator').val(data.servicecreator);
+    // }
+    //
+    // function submitUpdate() {
+    //     const formData = {
+    //         serviceid: parseInt($('#updateServiceid').val()),
+    //         servicename: $('#updateServicename').val(),
+    //         customername: $('#updateCustomername').val(),
+    //         servicestatus: $('#updateServicestatus').val(),
+    //         servicecreator: $('#updateServicecreator').val()
+    //     };
+    //
+    //     $.ajax({
+    //         url: '/updateService',
+    //         type: 'PUT',
+    //         contentType: 'application/json',
+    //         data: JSON.stringify(formData),
+    //         success: function (data) {
+    //             if (data.success) {
+    //                 console.log('服务信息修改成功:', data.message);
+    //             } else {
+    //                 console.error('服务信息修改失败:', data.code + data.message);
+    //             }
+    //             // 隐藏更新表单和模态框
+    //             $('#service_update').hide();
+    //             $('#updateModal').hide();
+    //
+    //             // 刷新页面
+    //             location.reload();
+    //         },
+    //         error: function (error) {
+    //             console.error('服务信息修改失败:', error);
+    //         }
+    //     });
+    // }
+
+
+
+
+
+    // 查找功能
+    $(document).ready(function () {
+        console.log("查找服务功能")
+
+        // 给搜索按钮添加点击事件处理函数
+        $('#search-btn').on('click', function () {
+
+            // 清空表格内容
+            $('#service_table_body').empty();
+            $('#pagination').empty();
+
+            // 获取用户输入的搜索词
+            const searchTerm = $('#search-input').val();
+
+            // 发送 AJAX 请求以获取符合搜索词的服务数据
+            $.ajax({
+                url: '/service_management/searchService',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ searchTerm: searchTerm }),
+                success: function (data) {
+
+                    // 解析服务数据
+                    const services = data.data;
+
+                    // 处理从服务器返回的服务数据，更新页面等操作
+                    console.log(data);
+                    // 更新表格内容
+                    $.each(services, function (index, service) {
+                        const row = '<tr>' +
+                            '<td>' + service.serviceid + '</td>' +
+                            '<td>' + service.servicename + '</td>' +
+                            '<td>' + service.customername + '</td>' +
+                            '<td>' + service.servicestatus + '</td>' +
+                            '<td>' + service.servicecreator + '</td>' +
+                            '<td>' +
+                            '<div class="button-group">' +
+                            '<button class="createorder-button" onclick="viewCreateorder(\'' + service.serviceid + '\')">生成订单</button>' +
+                            '</div>' +
+                            '<div class="button-group">' +
+                            '<button class="service_update" onclick="updateService(\'' + service.serviceid + '\')">修改</button>' +
+                            '</div>' +
+                            '<div class="button-group">' +
+                            '<button class="delete-button" onclick="deleteService(\'' + parseInt(service.serviceid) + '\')">删除</button>' +
+                            '</div>' +
+                            '</td>' +
+                            '</tr>';
+                        // 将行附加到表格主体
+                        $('#service_table_body').append(row);
+                    });
+                },
+                error: function (data) {
+                    console.error('搜索服务失败:', data.code + data.message);
+                }
+            });
+        });
+    });
+
+
+
+
+    // 提交生成订单的函数
+    function submitCreateOrder() {
+
+        // 构建订单对象
+        const orderData = {
+            orderid: parseInt($('#orderid').val()),
+            // orderid: $('#orderid').val(),
+            ordername: $('#ordername').val(),
+            orderstatus: $('#orderstatus').val(),
+            customername: $('#customername').val(),
+            orderaddress: $('#orderaddress').val(),
+            orderprice: parseFloat($('#orderprice').val()),
+            ordertime: $('#ordertime').val(),
+        };
+
+
+        // 发送Ajax请求到后端
+        $.ajax({
+            url: '/addCreateOrder', // 后端处理生成订单的接口
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function (data) {
+                console.log("orderData.orderid:",orderData.orderid)
+                console.log("data",data)
+                if (data.success) {
+                    console.log('订单生成成功:', data.message);
+
+                } else {
+                    console.log('订单生成失败:', data.code + data.message);
+
+                }
+            },
+            error: function (error) {
+                console.log('无法生成订单:', error);
+
+            }
+        });
+        cancelCreateOrder();
+    }
+
+    // 展示生成订单模态框
+    function viewCreateorder() {
+        $('#CreateOrder').show();
+    }
+    // 隐藏生成订单模态框
+    function cancelCreateOrder() {
+        $('#CreateOrder').hide();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 导入bootstrap依赖 -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css"/>
+
+    <title>用户管理</title>
+    <style>
+        a:link {
+            font-size: 25px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:visited {
+            font-size: 20px;
+            color: rgb(109, 109, 109);
+        }
+
+        a:hover {
+            font-size: 25px;
+            color: white;
+            text-decoration: none
+        }
+
+        #user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #user-list li {
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        #user-list li:hover {
+            background-color: #d9edf7;
+        }
+
+        #edit-user-modal {
+            display: none;
+            text-align: center;
+        }
+
+        #edit-user-modal h2 {
+            color: #333;
+        }
+
+        #edit-user-modal label {
+            display: block;
+            margin: 10px 0;
+            color: #555;
+        }
+
+        #edit-username,
+        #edit-password {
+            width: 20%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #save-edit-btn,
+        #cancel-edit-btn {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #save-edit-btn:hover,
+        #cancel-edit-btn:hover {
+            background-color: #45a049;
+        }
+
+
+        /* 添加用户模态框*/
+        #addUsersFormModal {
+            text-align: center;
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 80%; /* 最大宽度限制为80% */
+            padding: 20px;
+            background-color: #fefefe;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #addUsersFormModal label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px; /* 调整字体大小 */
+        }
+
+        #addUsersFormModal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        #addUsersFormModal button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+
+        #addUsersFormModal button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container" id="app" style="width: 100%">
+    <div class="row">
+        <!--显示导航-->
+        <div class="col-md-3" style="background-color: rgb(0,21,41); width:13%; height: 1000px;">
+            <div class="row">
+                <div class="col-md-12"
+                     style="background-color: rgb(0,40,77);text-align: center;height: 70px;line-height: 70px;font-size: 20px;color: white;font-weight: bold;">
+                    CRM管理系统
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center; padding: 60px 0px 40px 0px;">
+                    <a href="customer_management.html">客户信息管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="order_view.html">订单查看</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="churn_customer_management.html">流失客户管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">用户管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="service_management.html">服务管理</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="user_management.html">添加用户</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="text-align: center;padding: 40px 0px 40px 0px;">
+                    <a href="login.html">退出登录</a>
+                </div>
+            </div>
+        </div>
+        <!--显示内容-->
+        <div class="col-md-9"
+             style="border: 1px solid rgb(128,128,128);width: 87%; height: 1000px; background-color: #d9edf7">
+            <!-- 显示提示内容 -->
+            <div class="row" style="padding-top:30px; width:100%">
+                <div class="col-md-12"
+                     style="height: 90px;width: 100%;font-size: 30px;color: rgb(109,109,109);line-height: 30px;font-weight: bold;padding-left: 20px">
+                    <div style="height:100px;padding-left: 20px;padding-top:30px;font-size: 30px; color: rgb(109,109,109); ">
+                        <img src="../static/img/用户管理.png" style="width: 50px; height: 50px" alt=""> &nbsp; 用户管理
+                        <!--搜索用户-->
+                        <label for="search-input" style="font-size: 20px;padding-left: 150px">搜索用户：</label>
+                        <input type="text" id="search-input" placeholder="输入用户姓名" style="font-size: 20px">
+                        <button type="button" id="search-btn" style="font-size: 20px">搜索</button>
+
+                        <!--添加功能-->
+                        <div class="" style="text-align: right; margin-top: -46px;width: 1100px ">
+                            <button class="btn btn-primary" onclick="openAddUsersModal()">添加用户</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:30px;font-size: 20px">
+                        <ul id="user-list"></ul>
+                        <div class="col-md-12" style="text-align: center;padding: 20px 0px;">
+                            <button id="prev-page-btn">上一页</button>
+                            <span id="pagination-info"></span>
+                            <button id="next-page-btn">下一页</button>
+                        </div>
+                    </div>
+
+                    <!-- 编辑用户的模态框 -->
+                    <div id="edit-user-modal" style="display:none;">
+                        <h2>修改用户注册信息</h2>
+                        <label for="edit-username">输入新的用户名:</label>
+                        <input type="text" id="edit-username" name="edit-username">
+                        <br>
+                        <label for="edit-password">输入新的密码:</label>
+                        <input type="password" id="edit-password" name="edit-password">
+                        <br>
+                        <button type="button" id="save-edit-btn">保存修改</button>
+                        <button type="button" id="cancel-edit-btn">取消</button>
+                    </div>
+
+                    <!--  add添加用户模态框-->
+                    <form id="addUsersFormModal">
+                        <label for="adduserid">用户 ID:</label>
+                        <input type="number" id="adduserid" name="userid" required>
+                        <br>
+                        <label for="addusername">用户名:</label>
+                        <input type="text" id="addusername" name="username" required>
+                        <br>
+                        <label for="addpassword">用户密码:</label>
+                        <input type="text" id="addpassword" name="password" required>
+                        <br>
+                        <button type="submit">提交</button>
+                        <button type="button" onclick="closeAddUsersModal()">取消</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let currentPage = 1;
+        let data = {};
+        // 切换用户列表的显示/隐藏状态
+        // $('#toggle-user-list').click(function () {
+        //     $('#user-list').toggle();
+        // });
+        // 取消编辑，关闭模态框
+        $('#cancel-edit-btn').click(function () {
+            closeEditModal();
+        });
+        // 发送AJAX请求到后端获取用户信息
+        $.ajax({
+            url: '/getall', // 后端请求地址，根据实际情况修改
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                // 遍历返回的用户信息
+                $.each(data, function (index, user) {
+                    // 在ul元素中添加li元素，显示用户信息
+                    var listItem = '<li>用户ID: ' + user.userid + ', 用户名: ' + user.username +
+                        ' <button class="edit-btn" data-userid="' + user.userid + '">编辑</button>' +
+                        ' <button class="delete-btn" data-userid="' + user.userid + '">删除</button></li>';
+                    $('#user-list').append(listItem);
+                });
+
+                // 通过事件委托处理编辑按钮点击事件
+                $('#user-list').on('click', '.edit-btn', function () {
+                    var userid = $(this).data('userid');
+                    // 打开编辑模态框
+                    openEditModal(userid);
+                });
+
+                // 通过事件委托处理删除按钮点击事件
+                $('#user-list').on('click', '.delete-btn', function () {
+                    var userid = $(this).data('userid');
+                    // 发送删除请求到后端
+                    $.ajax({
+                        url: '/deleteuser/' + userid,
+                        type: 'DELETE',
+                        success: function (response) {
+                            alert(response.message);
+                            // 刷新用户列表
+                            location.reload();
+                            // refreshUserList();
+                        },
+                        error: function (xhr, status, error) {
+                            alert('删除失败: ' + error);
+                        }
+                    });
+                });
+            }
+        });
+
+        // 搜索功能 监听查找按钮的点击事件
+        $('#search-btn').on('click', function () {
+            closePages();   // 查找时关闭分页按键
+
+            // 获取输入的搜索词
+            var searchTerm = $('#search-input').val();
+
+            // 发送AJAX请求到后端API端点，通过搜索词进行用户模糊查找
+            $.ajax({
+                url: '/searchUser',  // 后端API的地址，执行用户模糊查找
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ searchTerm: searchTerm }),  // 将搜索词转换为JSON格式发送到后端
+                success: function (response) {
+                    console.log('后端响应:', response);
+                    if (response.success) {
+                        // 清空用户列表
+                        $('#user-list').empty();
+
+                        // 将获取到的用户数据填充到列表中
+                        for (var i = 0; i < response.data.length; i++) {
+                            var user = response.data[i];
+                            var listItem = '<li> 用户ID:' + user.Userid + ', 用户名：' + user.Username + '</li>';
+                            $('#user-list').append(listItem);
+                        }
+                    } else {
+                        // 如果未找到用户，弹出提示信息
+                        alert("未找到匹配用户！");
+                    }
+                },
+                error: function (xhr, status, data) {
+                    // 如果发生错误，弹出错误提示
+                    console.error('获取用户数据时出错:', data.code + data.message);
+                    // 处理不同的错误代码
+                    if (xhr.status === 404) {
+                        alert("未找到匹配用户！");
+                    } else if (xhr.status === 500) {
+                        alert("服务器内部错误！");
+                    } else {
+                        alert("获取用户数据时出错！");
+                    }
+                }
+            });
+        });
+
+
+
+        // 分页功能
+
+        // 下一页按钮点击事件
+        $('#next-page-btn').on('click', function () {
+            console.log('下一页按钮点击');
+            console.log("data.total_pages:", data.total_pages);
+            if (currentPage < data.total_pages) {
+                currentPage++;
+                loadUsers();
+            }
+        });
+        // 上一页按钮点击事件
+        $('#prev-page-btn').on('click', function () {
+            console.log('上一页按钮点击');
+            if (currentPage > 1) {
+                currentPage--;
+                loadUsers();
+            }
+        });
+
+        function loadUsers() {
+            console.log('加载用户');
+            $.ajax({
+                url: '/pages',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Pagenum: currentPage,
+                    Pagesize: 3,
+                }),
+                success: function (responseData) {
+                    // 更新全局 data 变量
+                    data = responseData;
+                    // 使用新数据更新 UI
+                    updateUI();
+                },
+                error: function (xhr, status, data) {
+                    alert('加载用户出错：' + data.code + data.message);
+                }
+            });
+        }
+
+        // 根据数据更新 UI 的函数
+        function updateUI() {
+            // 清空用户列表
+            $('#user-list').empty();
+
+            // 遍历返回的用户信息
+            $.each(data.data, function (index, user) {
+                var listItem = '<li>用户ID: ' + user.userid + ', 用户名' + user.username +
+                    ' <button class="edit-btn" data-userid="' + user.userid + '">编辑</button>' +
+                    ' <button class="delete-btn" data-userid="' + user.userid + '">删除</button></li>';
+                $('#user-list').append(listItem);
+            });
+
+            // 更新分页信息
+            $('#pagination-info').text(`第 ${data.current_page} 页，共 ${data.total_pages} 页`);
+
+            // 禁用或启用上一页按钮
+            $('#prev-page-btn').prop('disabled', data.current_page === 1);
+
+            // 禁用或启用下一页按钮
+            $('#next-page-btn').prop('disabled', data.current_page === data.total_pages);
+        }
+
+        // 初始加载用户
+        loadUsers();
+
+        // 打开编辑模态框的函数
+        function openEditModal(userid) {
+            // 获取用户信息
+            $.ajax({
+                url: '/getuser/' + userid,  // 根据实际情况修改
+                type: 'GET',
+                dataType: 'json',
+                success: function (user) {
+                    // 填充模态框中的表单
+                    $('#edit-username').val(user.username);
+                    $('#edit-password').val(user.password);
+
+                    // 设置编辑按钮的 data-userid 属性
+                    $('#save-edit-btn').data('userid', user.userid);
+
+                    // 显示编辑模态框
+                    $('#edit-user-modal').show();
+                },
+                error: function (xhr, status, data) {
+                    alert('获取用户信息失败: ' + data.code + data.message);
+                }
+            });
+        }
+
+        // 关闭编辑模态框的函数
+        function closeEditModal() {
+            // 隐藏编辑模态框
+            $('#edit-user-modal').hide();
+        }
+        // 关闭选页按钮
+        function closePages() {
+            $('#prev-page-btn').hide();
+            $('#pagination-info').hide();
+            $('#next-page-btn').hide();
+        }
+        // 绑定保存修改按钮点击事件
+        $('#save-edit-btn').click(function () {
+            var newUsername = $('#edit-username').val();
+            var newPassword = $('#edit-password').val();
+            var userid = $(this).data('userid');
+
+            // 发送更新请求到后端
+            $.ajax({
+                url: '/updateUser',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Userid: userid,
+                    Username: newUsername,
+                    Password: newPassword
+                }),
+                success: function (response) {
+                    alert(response.message);
+                    // 关闭编辑模态框
+                    closeEditModal();
+                    // 刷新用户列表或者执行其他操作
+                    location.reload();
+                    // refreshUserList();
+                },
+                error: function (xhr, status, data) {
+                    alert('更新失败: ' + data.code + data.message);
+                }
+            });
+        });
+    });
+
+
+    function closeAddUsersModal() {
+        console.log("关闭添加用户模态框")
+        $('#addUsersFormModal').hide();
+    }
+
+    function openAddUsersModal() {
+        console.log("打开添加服务模态框")
+        $('#addUsersFormModal').show();
+    }
+
+    // 添加用户功能
+    document.getElementById('addUsersFormModal').addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitAddUsersModal();
+    });
+
+    function submitAddUsersModal() {
+        const formData = {
+            userid: parseInt($('#adduserid').val()),
+            username: $('#addusername').val(),
+            password: $('#addpassword').val(),
+        };
+        // 发送 AJAX 请求到服务器
+        $.ajax({
+            url: '/addUsers',
+            type: 'POST',
+            data: formData, // 使用表单编码数据而不是 JSON
+            success: function (data) {
+                if (data.success) {
+                    console.log('用户添加成功:', data.message);
+                    location.reload();
+                } else {
+                    console.error('用户添加失败:', data.code + data.message);
+                }
+                closeAddUsersModal();
+            },
+            error: function (error) {
+                console.error('无法添加用户:', error);
+                closeAddUsersModal();
+            }
+        });
+        // 刷新页面
+        location.reload();
+    }
+</script>
+</body>
+
+</html>

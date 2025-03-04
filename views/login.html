@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <title>登录界面</title>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            margin: 0;
+            height: 100vh;
+            background: url('../static/img/云1.jpg') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 300px;
+            max-height: 300px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        span {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>欢迎登录</h1>
+
+<form method="post" action="/login">
+    <label for="username">用户名：</label>
+    <input type="text" id="username" name="username" required><br>
+    <label for="password">密码：</label>
+    <input type="password" id="password" name="password" required><br>
+    <label for="captcha">验证码：</label>
+    <div style="display: flex; align-items: center;">
+        <input type="number" id="captcha" name="captcha" maxlength="4" pattern="\d{4}" title="请输入4位数字" required>
+        <span onclick="refreshCaptcha()" id="refreshCaptcha" style="cursor: pointer; margin-left: 10px;">{{.RandomCaptcha}}</span>
+    </div>
+    <input type="hidden" name="randomCaptcha" value="{{.RandomCaptcha}}">
+    <input type="submit" value="登录" id="btn">
+</form>
+
+<script>
+    // 刷新 captcha
+    function refreshCaptcha() {
+        const randomCaptchaSpan = document.getElementById("refreshCaptcha");
+        const captchaInput = document.getElementById("captcha");
+        // 生成新的随机4位数字captcha
+        var newRandomCaptcha = Math.floor(Math.random() * 10000);
+        randomCaptchaSpan.textContent = newRandomCaptcha;
+        captchaInput.value = ""; // 清除用户以前的输入
+        // 使用新的captcha值更新隐藏的输入
+        document.querySelector('input[name="randomCaptcha"]').value = newRandomCaptcha;
+    }
+
+
+
+        // // 使用Fetch API发送POST请求
+        // const response = await fetch('/login', {
+        //     method: 'POST',
+        // });
+        //
+        // if (response.ok) {
+        //     // 登录成功，例如跳转到首页
+        //     window.location.href = '/index';
+        // } else {
+        //     // 登录失败，直接在控制台显示错误信息
+        //     const errorData = await response.json();
+        //     console.error('Error:', errorData);
+        //
+        //     alert('Error: ' + errorData.message);
+        // }
+
+</script>
+</body>
+</html>
